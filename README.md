@@ -1,4 +1,4 @@
-# yii2-behaviors
+# yii2-sortable
 
 SortableBehavior
 ------------------------------
