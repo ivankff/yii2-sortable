@@ -44,11 +44,11 @@ GridView::widget([
 		],
 		...
 	],
-    'panel' => [
+	'panel' => [
 		...
-        'after' => '<div class="clearfix">' . Html::a('<i class="fas fa-sort-numeric-down"></i> Пересортировать', \yii\helpers\Url::to(['position']), ['data-pjax' => '1', 'data-pjax-container' => 'crud-datatable-pjax', 'class' => 'btn btn-primary float-right kv-position-set']) . '</div>',
+		'after' => '<div class="clearfix">' . Html::a('<i class="fas fa-sort-numeric-down"></i> Пересортировать', \yii\helpers\Url::to(['position']), ['data-pjax' => '1', 'data-pjax-container' => 'crud-datatable-pjax', 'class' => 'btn btn-primary float-right kv-position-set']) . '</div>',
 		...
-    ],
+	],
 ]);
 ```
 
