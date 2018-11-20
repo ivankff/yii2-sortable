@@ -15,13 +15,18 @@ class BulkPositionAction extends Action
     const EVENT_BEFORE_SET_POSITION = 'beforeSetPosition';
 
     /**
-     * @var string
+     * @var string|callable
+     * `string` = className
      */
-    public $modelClass;
+    public $model;
     /**
      * @var string
      */
     public $positionAttribute = 'position';
+    /**
+     * @var string
+     */
+    public $positionRequestParam = 'position';
 
     /**
      * {@inheritdoc}
@@ -29,8 +34,11 @@ class BulkPositionAction extends Action
      */
     public function init()
     {
-        if (! class_exists($this->modelClass))
-            throw new UnknownClassException("Class {$this->modelClass} does not exists.");
+        if (is_string($this->model))
+            $this->model = [$this->model, 'findOne'];
+
+        if (! is_callable($this->model))
+            throw new UnknownClassException("`Model` must be callable.");
 
         parent::init();
     }
@@ -43,7 +51,7 @@ class BulkPositionAction extends Action
     {
         $success = false;
 
-        $position = Yii::$app->request->post('position');
+        $position = Yii::$app->request->post($this->positionRequestParam);
 
         if (!empty($position) && is_array($position)){
             arsort($position);
@@ -51,7 +59,7 @@ class BulkPositionAction extends Action
 
             foreach ($position as $id => $pos) {
                 /** @var ActiveRecord $model */
-                $model = $this->modelClass::findOne($id);
+                $model = call_user_func($this->model, $id);
 
                 if (! $model->hasAttribute($this->positionAttribute))
                     throw new Exception("Object of `{$this->modelClass}` does not have an `{$this->positionAttribute}` attribute");

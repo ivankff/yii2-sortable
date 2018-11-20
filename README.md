@@ -25,7 +25,7 @@ public function actions()
 		...
 		'position' => [
 			'class' => 'ivankff\yii2Sortable\BulkPositionAction',
-			'modelClass' => 'common\models\Product',
+			'model' => [$this, 'findModel'],
 		],
 		...
 	];
