@@ -12,6 +12,8 @@ class PositionColumnAsset extends AssetBundle
         'js/grid-position.js',
     ];
     public $depends = [
+        'yii\widgets\PjaxAsset',
+        'yii\web\JqueryAsset',
     ];
 
 }
