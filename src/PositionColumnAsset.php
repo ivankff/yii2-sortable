@@ -4,6 +4,8 @@ namespace ivankff\yii2Sortable;
 
 use \yii\web\AssetBundle;
 
+/**
+ */
 class PositionColumnAsset extends AssetBundle
 {
 

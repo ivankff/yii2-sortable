@@ -8,7 +8,10 @@ use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\helpers\Json;
 
-class PositionColumn extends DataColumn {
+/**
+ */
+class PositionColumn extends DataColumn
+{
 
     public $width = '5%';
 

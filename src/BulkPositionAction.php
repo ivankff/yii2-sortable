@@ -9,6 +9,8 @@ use yii\base\UnknownClassException;
 use yii\db\ActiveRecord;
 use yii\web\Response;
 
+/**
+ */
 class BulkPositionAction extends Action
 {
 
@@ -19,10 +21,6 @@ class BulkPositionAction extends Action
      * `string` = className
      */
     public $model;
-    /**
-     * @var string
-     */
-    public $positionAttribute = 'position';
     /**
      * @var string
      */
@@ -50,33 +48,51 @@ class BulkPositionAction extends Action
     public function run()
     {
         $success = false;
+        $requestPositions = Yii::$app->request->post($this->positionRequestParam);
 
-        $position = Yii::$app->request->post($this->positionRequestParam);
-
-        if (!empty($position) && is_array($position)){
-            arsort($position);
+        if (!empty($requestPositions) && is_array($requestPositions)){
+            $toResort = [];
             $success = true;
 
-            foreach ($position as $id => $pos) {
+            foreach ($requestPositions as $id => $position) {
                 /** @var ActiveRecord $model */
                 $model = call_user_func($this->model, $id);
+                $position = (int)$position;
 
-                if (! $model->hasAttribute($this->positionAttribute))
-                    throw new Exception("Object of `{$this->modelClass}` does not have an `{$this->positionAttribute}` attribute");
+                /** @var SortableBehavior $positionBehavior */
+                $positionBehavior = null;
+                foreach ($model->getBehaviors() as $b)
+                    if ($b instanceof SortableBehavior)
+                        $positionBehavior = $b;
 
-                $pos = (int)$pos;
+                if (! $positionBehavior)
+                    throw new Exception("Model does not have an `SortableBehavior` behavior");
 
-                if ($model->getAttribute($this->positionAttribute) !== $pos) {
-                    $event = new PositionActionEvent(['model' => $model, 'position' => $pos]);
+                $positionAttribute = $positionBehavior->positionAttribute;
+                $positionStep = $positionBehavior->positionStep;
+                $groupAttributes = $positionBehavior->groupAttributes;
+
+                if ($model->getAttribute($positionAttribute) !== $position) {
+                    $event = new PositionActionEvent(['model' => $model, 'position' => $position]);
                     $this->trigger(self::EVENT_BEFORE_SET_POSITION, $event);
 
                     if (! $event->execute)
                         continue;
 
-                    $model->setAttribute($this->positionAttribute, $pos);
-                    $success = $success && $model->save();
+                    $model::updateAll([$positionAttribute => $position], $model->getPrimaryKey(true));
+
+                    $resort = [
+                        'className' => get_class($model),
+                        'positionAttribute' => $positionAttribute,
+                        'positionStep' => $positionStep,
+                        'condition' => $groupAttributes ? $model->getAttributes($groupAttributes) : [],
+                    ];
+                    $toResort[md5(serialize($resort))] = $resort;
                 }
             }
+
+            foreach ($toResort as $key => $resort)
+                SortableBehavior::resort($resort['className'], $resort['positionAttribute'], $resort['positionStep'], $resort['condition']);
         }
 
         Yii::$app->response->format = Response::FORMAT_JSON;
