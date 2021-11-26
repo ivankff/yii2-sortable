@@ -163,7 +163,7 @@ class SortableBehavior extends Behavior
             ->limit(1)
             ->one();
 
-        return $last ?  $this->positionStep : $last->{$this->positionAttribute} + $this->positionStep;
+        return $last ? $last->{$this->positionAttribute} + $this->positionStep : $this->positionStep;
     }
 
     /**
